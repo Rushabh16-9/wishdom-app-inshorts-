@@ -20,6 +20,10 @@ app.use(express.static('public')); // Serve static files
 // Routes
 app.use('/api/feed', require('./routes/feedRoutes'));
 
+app.get('/', (req, res) => {
+    res.send('Wishdom API is running');
+});
+
 const PORT = process.env.PORT || 5000;
 
 if (require.main === module) {
