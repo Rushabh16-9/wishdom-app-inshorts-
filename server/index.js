@@ -24,6 +24,11 @@ app.get('/', (req, res) => {
     res.send('Wishdom API is running');
 });
 
+// Admin Panel Route
+app.get('/admin', (req, res) => {
+    res.sendFile(__dirname + '/public/admin.html');
+});
+
 const PORT = process.env.PORT || 5000;
 
 if (require.main === module) {

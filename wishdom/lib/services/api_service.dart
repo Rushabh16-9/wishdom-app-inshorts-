@@ -5,13 +5,8 @@ import 'package:flutter/foundation.dart';
 class ApiService {
   // Use 10.0.2.2 for Android Emulator, localhost for iOS/Web
   static String get baseUrl {
-    if (kIsWeb) return 'http://localhost:5000/api';
-    // For physical device, try localhost with 'adb reverse', or fallback to machine IP
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-       // return 'http://192.168.29.236:5000/api'; // Fallback if localhost fails
-       return 'http://localhost:5000/api';
-    }
-    return 'http://localhost:5000/api';
+    // Production Vercel URL
+    return 'https://wishdom-app-inshorts-yi9b.vercel.app/api';
   }
 
   static Future<List<Map<String, dynamic>>> getStories({String? search}) async {

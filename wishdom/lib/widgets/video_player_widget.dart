@@ -47,14 +47,19 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> with AutomaticKee
       _isLocalController = true;
     }
 
-    if (_controller!.value.isInitialized) {
-      _onControllerInitialized();
+    if (widget.externalController != null) {
+      // External controller: Trust the parent to initialize it, or listen for it.
+      // DO NOT call initialize() here to avoid race conditions.
+      if (_controller!.value.isInitialized) {
+        _onControllerInitialized();
+      } else {
+        _controller!.addListener(_initializationListener);
+      }
     } else {
+      // Local controller: Initialize it ourselves.
       _controller!.initialize().then((_) {
         if (mounted) _onControllerInitialized();
       });
-      // Also listen for initialization if it happens externally
-      _controller!.addListener(_initializationListener);
     }
   }
 
