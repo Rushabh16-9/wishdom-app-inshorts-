@@ -21,7 +21,7 @@ app.use(express.static('public')); // Serve static files
 app.use('/api/feed', require('./routes/feedRoutes'));
 
 app.get('/', (req, res) => {
-    res.send('Wishdom API is running');
+    res.send('Wisdom API is running');
 });
 
 // Admin Panel Route

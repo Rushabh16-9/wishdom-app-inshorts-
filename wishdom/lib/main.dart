@@ -12,7 +12,7 @@ class WishdomApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Wishdom',
+      title: 'Wisdom',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.modernDark,
       home: const MainScreen(),
