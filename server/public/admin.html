@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishdom Admin - Upload Story</title>
+    <style>
+        :root {
+            --bg: #1A1A1D;
+            --surface: #2C2C2C;
+            --accent: #C5A059;
+            --text-primary: #F5E6CA;
+            --text-secondary: #E0D8B0;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: var(--surface);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--accent);
+        }
+
+        h1 {
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--bg);
+            border: 1px solid var(--accent);
+            color: var(--text-primary);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .history-btn {
+            background-color: var(--surface);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        .history-container {
+            display: none;
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .story-item {
+            background-color: var(--surface);
+            border: 1px solid #444;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .story-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .story-content {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <div class="container">
+            <h1>Wishdom Admin</h1>
+            <button type="button" class="history-btn" onclick="toggleHistory()">View Upload History</button>
+
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label>Story Type</label>
+                    <select id="type" onchange="toggleFields()">
+                        <option value="text">Text Story</option>
+                        <option value="video">Video Story</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="textGroup">
+                    <label>Message Content</label>
+                    <textarea id="textContent" rows="4" placeholder="Share your wisdom..."></textarea>
+                </div>
+
+                <div class="form-group" id="videoGroup" style="display: none;">
+                    <label>Video URL</label>
+                    <input type="url" id="contentUrl" placeholder="https://example.com/video.mp4">
+                </div>
+
+                <div class="form-group">
+                    <label>Caption (Optional)</label>
+                    <input type="text" id="caption" placeholder="Add a caption...">
+                </div>
+
+                <div class="form-group">
+                    <label>Hashtags (comma separated)</label>
+                    <input type="text" id="hashtags" placeholder="motivation, daily">
+                </div>
+
+                <button type="submit">UPLOAD STORY</button>
+                <div id="status" class="status"></div>
+            </form>
+        </div>
+
+        <div id="historySection" class="history-container">
+            <h2 style="color: var(--accent); text-align: center;">Upload History</h2>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleFields() {
+            const type = document.getElementById('type').value;
+            document.getElementById('textGroup').style.display = type === 'text' ? 'block' : 'none';
+            document.getElementById('videoGroup').style.display = type === 'video' ? 'block' : 'none';
+        }
+
+        async function toggleHistory() {
+            const section = document.getElementById('historySection');
+            if (section.style.display === 'none' || section.style.display === '') {
+                section.style.display = 'block';
+                await fetchHistory();
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        async function fetchHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '<p style="text-align:center;">Loading...</p>';
+
+            try {
+                const res = await fetch('/api/feed');
+                const stories = await res.json();
+
+                if (stories.length === 0) {
+                    list.innerHTML = '<p style="text-align:center;">No stories found.</p>';
+                    return;
+                }
+
+                list.innerHTML = stories.map(story => `
+                    <div class="story-item">
+                        <div class="story-meta">
+                            ${new Date(story.createdAt).toLocaleString()} | Type: ${story.type.toUpperCase()}
+                        </div>
+                        <div class="story-content">
+                            ${story.type === 'text' ? story.textContent : `<a href="${story.contentUrl}" target="_blank" style="color: var(--accent);">View Video</a>`}
+                        </div>
+                        ${story.caption ? `<div style="font-style: italic; color: #aaa;">"${story.caption}"</div>` : ''}
+                        <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent);">
+                            ${story.hashtags.map(h => '#' + h).join(' ')}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                list.innerHTML = '<p style="color:red; text-align:center;">Failed to load history.</p>';
+            }
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const status = document.getElementById('status');
+            const submitBtn = e.target.querySelector('button');
+
+            status.textContent = 'Uploading...';
+            status.style.color = '#E0D8B0';
+            submitBtn.disabled = true;
+
+            const type = document.getElementById('type').value;
+            const caption = document.getElementById('caption').value;
+            const hashtags = document.getElementById('hashtags').value.split(',').map(s => s.trim()).filter(s => s);
+
+            const data = {
+                type,
+                caption,
+                hashtags,
+                author: 'Admin'
+            };
+
+            if (type === 'text') {
+                data.textContent = document.getElementById('textContent').value;
+            } else {
+                data.contentUrl = document.getElementById('contentUrl').value;
+            }
+
+            try {
+                const response = await fetch('/api/feed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    status.textContent = 'Success! Story Uploaded.';
+                    status.style.color = '#90EE90'; // Light Green
+                    document.getElementById('uploadForm').reset();
+                    toggleFields();
+                    if (document.getElementById('historySection').style.display === 'block') {
+                        fetchHistory(); // Refresh list if open
+                    }
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (err) {
+                status.textContent = 'Error: ' + err.message;
+                status.style.color = '#FF6347'; // Tomato Red
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>
